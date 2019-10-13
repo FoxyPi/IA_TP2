@@ -1,4 +1,5 @@
 from DistanceMatrix import *
+import random
 
 alpha = 0.9
 cities = []
@@ -25,6 +26,25 @@ def initial_temperature():
     
     return maxDistance
 
+def neighbor():
+    global current
+
+    j = random.randint(2,len(current) - 2)
+    i = random.randint(0, j - 2)
+
+    print("j : " + str(j))
+    print("i : " + str(i))
+
+    neighbor = list(current)
+
+    aux = reversed(neighbor[i+1:j+1])
+
+    neighbor[i+1:j+1] = aux
+
+    return neighbor
+
+
+
 # MAIN #
 fName = "matrixTeste.txt"
 
@@ -33,17 +53,7 @@ distances = createSmallMatrix(cities, ["Belmar","Freita","Jardim","Quebrada","Vi
 create_initial_solution()
 best = current
 temperature = initial_temperature()
+neighbor = neighbor()
 
-repeat
-    for n = 1 to n_iter do
-        próximo <- vizinho(corrente)
-        d <- distância(próximo) - distância(corrente)
-        if d < 0 then
-            corrente <- próximo
-            if distância(corrente) < distância(melhor) then melhor <- corrente
-        else corrente <- próximo apenas com probabilidade exp(-d/T)
-    if criterio_de_paragem(...) then retorna melhor
-    n_iter <- var_n_iter(n_iter)
-    T <- decaimento(T)
-
-print(current,'\n',temperature)
+print("CURRENT : " + str(current))
+print ("NEIGHBOR: " + str(neighbor))
