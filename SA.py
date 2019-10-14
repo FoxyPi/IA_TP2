@@ -19,12 +19,17 @@ def create_initial_solution():
 def initial_temperature():
     auxDistances = distances[1]
     maxDistance = 0
+    minDistance = 0
+    maxTemp = 0
     for j in auxDistances:
         for k in j:
             if k > maxDistance:
                 maxDistance = k
-    
-    return maxDistance
+                minDistance = k
+            elif k < minDistance:
+                minDistance = k
+
+    return maxDistance - minDistance
 
 def neighbor():
     global current
@@ -55,5 +60,6 @@ best = current
 temperature = initial_temperature()
 neighbor = neighbor()
 
+print(temperature)
 print("CURRENT : " + str(current))
 print ("NEIGHBOR: " + str(neighbor))
