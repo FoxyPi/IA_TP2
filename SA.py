@@ -2,9 +2,10 @@ from DistanceMatrix import *
 import random
 import sys
 import math
+import time
 
-alphaT = 0.95
-alphaIter = 1.2
+alphaT = 0.90
+alphaIter = 1.1
 cities = []
 distances = [[]]
 temperature = 0
@@ -45,6 +46,7 @@ def create_initial_solution():
             cost += distance(distances,c,n)
             c = n
         except StopIteration:
+            cost += distance(distances,c,aux[0])
             break
     return Solution(aux,cost)
     
@@ -69,24 +71,57 @@ def min_distance():
 
     return minDistance
 
+def second_max_distance(max):
+    maxDistance = 0
+    auxDistances = distances[1]
+    for j in auxDistances:
+        for k in j:
+            if k > maxDistance and k < max:
+                maxDistance = k
+
+    return maxDistance
+
+
+def second_min_distance(min):
+    minDistance = max_distance()
+    auxDistances = distances[1]
+    for j in auxDistances:
+        for k in j:
+            if k < minDistance and k > min:
+                minDistance = k
+
+    return minDistance
+
 def initial_temperature():
-    return max_distance() - min_distance()
+    maxDistance = max_distance()
+    minDistance = min_distance()
+    return -((maxDistance - minDistance) - (second_max_distance(maxDistance) - second_min_distance(minDistance)))/math.log(0.95)
 
 def getNeighbor():
     global current
     citiesL = current.getCitiesList()
+    length = len(citiesL)
 
-    j = random.randint(2,len(citiesL) - 2)
+    j = random.randint(2,length - 1)
     i = random.randint(0, j - 2)
 
+    if i == 0 and j == (length - 1):
+        i += 1 
+
+    jplusone = j + 1
+
     neighbor = list(citiesL)
+    
 
-    aux = reversed(neighbor[i+1:j+1])
+    aux = reversed(neighbor[i+1:jplusone])
+    neighbor[i+1:jplusone] = aux
 
-    neighbor[i+1:j+1] = aux
+    if jplusone == length:
+        jplusone = 0
+
 
     cost = distance(distances,citiesL[i],citiesL[j]) - distance(distances,citiesL[i],citiesL[i+1]) \
-         + distance(distances,citiesL[i+1],citiesL[j+1]) - distance(distances,citiesL[j],citiesL[j+1])
+         + distance(distances,citiesL[i+1],citiesL[jplusone]) - distance(distances,citiesL[j],citiesL[jplusone])
 
     newCost = current.getCost() + cost
     
@@ -97,7 +132,6 @@ def var_n_iter():
     n_iter = math.ceil(alphaIter * n_iter)
 
 def calc_prob(d):
-    print(temperature)
     return math.exp(-1*d/temperature)
 
 # MAIN #
@@ -108,10 +142,16 @@ cities = readDistanceMatrix(fName)
 distances = createSmallMatrix(cities, ['Atroeira', 'Belmar', 'Cerdeira', 'Douro', 'Encosta', 'Freita', 'Gonta', 'Horta', 'Infantado', 'Jardim', 'Lourel', 'Monte', 'Nelas', 'Oura', 'Pinhal', 'Quebrada', 'Roseiral', 'Serra', 'Teixoso', 'Ulgueira', 'Vilar'])
 
 #Inicializacao do algoritmo
+
+initialTime = int(round(time.time() * 1000))
+
 current = create_initial_solution()
+initialSolution = Solution(current.getCitiesList(),current.getCost())
 best = Solution(current.getCitiesList(),current.getCost())
+worst = Solution(current.getCitiesList(),current.getCost())
 temperature = initial_temperature()
 prob = 1.0
+finalSolution = 0
 
 while True:
     for i in range(0,n_iter + 1):
@@ -123,15 +163,24 @@ while True:
             
             if current.getCost() < best.getCost():
                 best = Solution(current.getCitiesList(),current.getCost())
-       
+            elif current.getCost() > worst.getCost():
+                worst = Solution(current.getCitiesList(),current.getCost())
         else:
             prob = calc_prob(d)
             current = (current,Solution(neighbor.getCitiesList(),neighbor.getCost()))[random.random() < prob]
 
 
-    if prob < 0.000005:
+    if temperature < 1:
+        finalSolution = current
         break
     fallout(temperature)
 
-print(best.getCitiesList(), best.getCost())
+
+finalTime = int(round(time.time() * 1000))
+
+print("TOTAL TIME : " + str(finalTime - initialTime) + "ms \n\n")
+print("MELHOR SOLUÇÃO : \n\tPERCURSO: " + str(best.getCitiesList()) + "\n\tCUSTO: " + str(best.getCost()) + "\n")
+print("PIOR SOLUÇÃO : \n\tPERCURSO: " + str(worst.getCitiesList()) + "\n\tCUSTO: " + str(worst.getCost()) + "\n")
+print("PRIMEIRA SOLUÇÃO : \n\tPERCURSO: " + str(initialSolution.getCitiesList()) + "\n\tCUSTO: " + str(initialSolution.getCost()) + "\n")
+print("ULTIMA SOLUÇÃO : \n\tPERCURSO: " + str(finalSolution.getCitiesList()) + "\n\tCUSTO: " + str(finalSolution.getCost()) + "\n")
 
