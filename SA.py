@@ -9,7 +9,8 @@ alphaIter = 1.1
 cities = []
 distances = [[]]
 temperature = 0
-n_iter = 10
+n_iter = 0
+total_iter = 0
 
 
 class Solution:
@@ -129,7 +130,9 @@ def getNeighbor():
 
 def var_n_iter():
     global n_iter
+    global total_iter
     n_iter = math.ceil(alphaIter * n_iter)
+    total_iter += n_iter
 
 def calc_prob(d):
     return math.exp(-1*d/temperature)
@@ -139,7 +142,8 @@ def calc_prob(d):
 #Leitura do ficheiro e criacao de matrizes
 fName = "matrixTeste.txt"
 cities = readDistanceMatrix(fName)
-distances = createSmallMatrix(cities, ['Atroeira', 'Belmar', 'Cerdeira', 'Douro', 'Encosta', 'Freita', 'Gonta', 'Horta', 'Infantado', 'Jardim', 'Lourel', 'Monte', 'Nelas', 'Oura', 'Pinhal', 'Quebrada', 'Roseiral', 'Serra', 'Teixoso', 'Ulgueira', 'Vilar'])
+citiesL = ['Atroeira', 'Belmar', 'Cerdeira', 'Douro', 'Encosta', 'Freita', 'Gonta', 'Horta', 'Infantado', 'Jardim', 'Lourel', 'Monte', 'Nelas', 'Oura', 'Pinhal', 'Quebrada', 'Roseiral', 'Serra', 'Teixoso', 'Ulgueira', 'Vilar']
+distances = createSmallMatrix(cities,citiesL)
 
 #Inicializacao do algoritmo
 
@@ -153,6 +157,9 @@ temperature = initial_temperature()
 prob = 1.0
 finalSolution = 0
 
+n_iter = int(len(citiesL) * (len(citiesL) - 1) / 2)
+total_iter += n_iter
+print(n_iter)
 while True:
     for i in range(0,n_iter + 1):
         neighbor = getNeighbor()
@@ -170,7 +177,7 @@ while True:
             current = (current,Solution(neighbor.getCitiesList(),neighbor.getCost()))[random.random() < prob]
 
 
-    if temperature < 1:
+    if total_iter > 40000:
         finalSolution = current
         break
     fallout(temperature)
